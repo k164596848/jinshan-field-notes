@@ -528,6 +528,59 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--sun); outline-o
 .people-reference-grid .reference-entry { min-width: 0; margin: 0; }
 .prose .people-reference-grid img { max-height: 85px; }
 
+/* 人物分工與栽種插畫延續地方誌的手繪色彩。 */
+.person-badges { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; padding: 0; margin: 14px 0 0; }
+.prose .person-badges > li { margin: 0; }
+.role-badge { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #d9cbb9; border-radius: 6px 14px 6px 14px; padding: 4px 9px; font-size: .8rem; line-height: 1.6; color: #633d30; background: #f6e5d5; }
+.role-badge svg, .people-filter-buttons svg { width: 20px; height: 20px; flex: none; }
+.role-web { background: #e5ece0; color: #334c36; border-color: #cbd8c4; }
+.role-art { background: #eee2ed; color: #694263; border-color: #dcc9d9; }
+.role-plan { background: #f7edca; color: #615020; border-color: #e0d3a4; }
+.people-filters { padding: 18px 0 20px; border-top: 1px dashed var(--line); }
+.prose .people-filter-label { margin: 0 0 12px; font-size: .88rem; font-weight: 700; }
+.people-filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.people-filter-buttons button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; border: 1px solid #cccbb8; border-radius: 24px; color: var(--ink); background: #fffcf4; cursor: pointer; font: inherit; font-size: .86rem; }
+.people-filter-buttons button[aria-pressed="true"] { background: #344c35; color: #fffdf6; border-color: #344c35; }
+.people-filter-buttons button:hover { box-shadow: 0 2px 0 #bdbba7; }
+.people-filter-buttons button > span { font-size: .78rem; opacity: .85; }
+.prose .people-filter-status { margin: 14px 0 0; font-size: .88rem; font-weight: 700; }
+.prose .people-filter-note { margin: 4px 0 0; font-size: .82rem; color: #626856; }
+.cultivation-overview { margin: 28px 0 36px; padding: 26px 20px 18px; border: 1px solid #d9d2bd; border-radius: 22px 6px 22px 6px; background: #f5eedb; }
+.prose .cultivation-heading h2 { font-size: 1.6rem; margin: 4px 0 10px; border: 0; padding: 0; }
+.prose .cultivation-heading > p:not(.eyebrow) { font-size: .93rem; margin: 0 0 18px; }
+.prose .cultivation-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 0; }
+.prose .cultivation-steps > li { margin: 0; min-width: 0; }
+.cultivation-steps a { display: flex; flex-direction: column; height: 100%; padding: 10px 10px 14px; border: 1px solid #e2d6bd; border-radius: 12px; color: inherit; background: #fffaf0; text-decoration: none; transition: transform .2s, border-color .2s; }
+.cultivation-steps a:hover { transform: translateY(-3px); border-color: #8f6b42; }
+.cultivation-art { display: block; width: 100%; aspect-ratio: 1; background-image: url('img/cultivation-stages.webp'); background-size: 200% 200%; background-repeat: no-repeat; }
+.cultivation-art-1 { background-position: 0 0; }
+.cultivation-art-2 { background-position: 100% 0; }
+.cultivation-art-3 { background-position: 0 100%; }
+.cultivation-art-4 { background-position: 100% 100%; clip-path: inset(0 0 0 4%); }
+.cultivation-step-number { font-family: var(--font-head); font-style: italic; color: #956242; font-size: 1.25rem; margin-top: 8px; }
+.prose .cultivation-steps h3 { margin: 2px 0 8px; font-size: 1.08rem; color: #344c35; }
+.prose .cultivation-steps p { font-size: .86rem; line-height: 1.8; margin: 0 0 14px; }
+.cultivation-step-link { font-size: .82rem; font-weight: 700; color: #7b4b35; margin-top: auto; }
+.cultivation-step-link > span { float: right; }
+.prose .cultivation-note { font-size: .8rem; color: #62604f; margin: 16px 0 0; }
+[id^="cultivation-"] { scroll-margin-top: 150px; }
+@media (max-width: 1050px) {
+  .prose .cultivation-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .cultivation-overview { padding: 20px 12px 16px; }
+  .prose .cultivation-steps { gap: 9px; }
+  .cultivation-steps a { padding: 7px 9px 12px; }
+  .prose .cultivation-steps h3 { font-size: 1rem; }
+  .people-filter-buttons { gap: 7px; }
+  .people-filter-buttons button { padding: 7px 10px; }
+}
+@media print {
+  .people-filters { display: none; }
+  .person-feature[hidden], .people-index > li[hidden] { display: block !important; }
+  .cultivation-steps a { break-inside: avoid; }
+}
+
 /* Navigation collapses before its nine labels become crowded. */
 @media (max-width: 1340px) {
   .edition-bar { margin: 0 32px; }

@@ -1,37 +1,37 @@
-# 金山地瓜地方誌
+# Jinshan Field Notes
 
-金山地瓜地方誌（來去金山，FUN 藷假）：新北市立金山高中「地瓜金正讚」小組的 2015 台灣網界博覽會作品，以及 2026 年的重構版。
+金山地瓜地方誌 (Jinshan Sweet Potato Field Notes; tagline「來去金山，FUN 藷假」, "Come to Jinshan for a FUN sweet-potato summer"): the 2015 Taiwan Schools Cyberfair entry by the「地瓜金正讚」(Jinshan Sweet Potatoes Are the Best) team from New Taipei Municipal Jinshan High School, together with its 2026 remake.
 
-**線上網站：** https://k164596848.github.io/jinshan-field-notes/ （新版首頁；主選單的「2015 原版」可切到舊版）
+**Live site:** https://k164596848.github.io/jinshan-field-notes/ (the remake's home page; "2015 原版" in the main menu switches to the original site)
 
-| 資料夾 | 內容 |
+| Folder | Contents |
 |---|---|
-| `2015-original/` | 2015 年原版網站（Namo WebEditor 輸出，頁框與 Big5 頁面原封不動）。唯一的原稿，請勿修改。 |
-| `src/` | 重構版的正式來源：建置腳本、首頁版型、31 篇內文、樣式表、互動腳本、圖片與圖示。要改網站請改這裡。 |
-| `2026-remake/` | 由 `src/` 建置出的成品網站（重製版），可直接開啟 `2026-remake/index.html` 或放上任何靜態主機。其中 `original/` 是建置時複製進來的 2015 原版，新舊版互有按鈕可以切換，所以整個資料夾放上同一台主機就能兩版都看。 |
-| `index.html` | 根目錄的轉址頁，直接跳到 `2026-remake/`，方便整個儲存庫放上 GitHub Pages 之類的主機。 |
+| `2015-original/` | The original 2015 site (Namo WebEditor output; framesets and Big5 pages left untouched). This is the only source manuscript. Do not edit it. |
+| `src/` | The authoritative source of the remake: build scripts, home-page template, the 31 articles, stylesheet, interactive scripts, images and icons. Edit here to change the site. |
+| `2026-remake/` | The finished site built from `src/` (the remake). Open `2026-remake/index.html` directly or put it on any static host. Its `original/` folder is a copy of the 2015 original made at build time, and each version has a button that switches to the other, so hosting this one folder serves both versions. |
+| `index.html` | A redirect page at the repository root that jumps straight to `2026-remake/`, so the whole repository can be hosted on GitHub Pages or a similar service. |
 
-## 重建
+## Rebuilding
 
-需要 Python 3 與 `lxml`（`pip install lxml`）。在本資料夾執行：
-
-```sh
-python3 src/build_yam.py 2015-original /tmp/jfn-preview   # 先輸出到暫存目錄檢查
-python3 src/verify_build.py                           # 確認「2026-remake/」與乾淨重建一致
-```
-
-確認無誤後，把暫存輸出整個取代 `2026-remake/` 即可。建置腳本會拒絕把輸出指到來源目錄。
-
-## 發布網站
-
-推送到 `main` 分支後，`.github/workflows/pages.yml` 會先重建並驗證，再把 `2026-remake/`（含 `original/` 的 2015 原版）發布到 GitHub Pages，網址是 https://k164596848.github.io/jinshan-field-notes/ 。首次設定時，請到儲存庫的「設定（Settings）」→「Pages」，將「來源（Source）」設為「GitHub Actions」。
-
-GitHub Pages 對每個網頁都傳送 `charset=utf-8`，所以建置時會把舊版的 Big5 單元頁框轉成 UTF-8（`2015-original/` 原稿不動）。根目錄的 `.nojekyll` 讓 GitHub Pages 不使用 Jekyll 處理這個儲存庫。
-
-## 本機預覽
+Requires Python 3 and `lxml` (`pip install lxml`). Run from this folder:
 
 ```sh
-cd 2026-remake && python3 -m http.server 8000     # 開 http://localhost:8000/
+python3 src/build_yam.py 2015-original /tmp/jfn-preview   # build into a temporary directory first and check it
+python3 src/verify_build.py                           # confirm that 2026-remake/ matches a clean rebuild
 ```
 
-詳細的來源結構與各次改版紀錄見 `src/README.md`。
+Once the output looks right, replace the whole of `2026-remake/` with it. The build script refuses to write its output into the source directory.
+
+## Publishing
+
+After a push to `main`, `.github/workflows/pages.yml` rebuilds and verifies the site, then publishes `2026-remake/` (including the 2015 original under `original/`) to GitHub Pages at https://k164596848.github.io/jinshan-field-notes/ . For first-time setup, open the repository's Settings → Pages and set Source to "GitHub Actions".
+
+GitHub Pages serves every page with `charset=utf-8`, so the build converts the original site's Big5 unit framesets to UTF-8 (the `2015-original/` manuscript stays untouched). The `.nojekyll` file at the root stops GitHub Pages from running Jekyll on this repository.
+
+## Local preview
+
+```sh
+cd 2026-remake && python3 -m http.server 8000     # open http://localhost:8000/
+```
+
+See `src/README.md` for the detailed source layout and the change log of each revision.

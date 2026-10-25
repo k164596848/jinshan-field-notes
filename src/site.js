@@ -59,19 +59,67 @@
     filterChapters();
   }
 
-  // 人物誌：保留原生展開閱讀，另提供一次展開所有心得。
-  var peopleToggle = document.querySelector('.people-expand-all');
-  if (peopleToggle) {
-    var personStories = Array.from(document.querySelectorAll('.person-story'));
-    function updatePeopleToggle() {
-      var allOpen = personStories.every(function (story) { return story.open; });
-      peopleToggle.textContent = allOpen ? '收合全部心得' : '展開全部心得';
-      peopleToggle.setAttribute('aria-pressed', String(allOpen));
+  // 分工取自原專題；停用 JavaScript 時仍可閱讀全部人物。
+  var peopleFilters = document.querySelector('.people-filters');
+  var peopleCards = Array.from(document.querySelectorAll('[data-person-roles].person-feature'));
+  var selectedPeopleRole = 'all';
+  function syncPeopleToc() {
+    document.querySelectorAll('.article-toc a').forEach(function (link) {
+      var target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      var profile = target && target.closest('.person-feature');
+      if (profile) link.closest('li').hidden = profile.hidden;
+    });
+  }
+  function filterPeople(role) {
+    selectedPeopleRole = role;
+    document.querySelectorAll('[data-person-roles]').forEach(function (item) {
+      item.hidden = role !== 'all' && item.dataset.personRoles.split(' ').indexOf(role) === -1;
+    });
+    if (peopleFilters) {
+      peopleFilters.querySelectorAll('[data-person-filter]').forEach(function (button) {
+        button.setAttribute('aria-pressed', String(button.dataset.personFilter === role));
+      });
+      peopleFilters.querySelector('.people-filter-status').textContent = '顯示 ' + peopleCards.filter(function (card) { return !card.hidden; }).length + ' / ' + peopleCards.length + ' 位夥伴';
     }
+    syncPeopleToc();
+    if (peopleToggle) updatePeopleToggle();
+  }
+  function revealLinkedPerson() {
+    var id;
+    try { id = decodeURIComponent(window.location.hash.slice(1)); } catch (e) { return; }
+    var target = document.getElementById(id);
+    var profile = target && target.closest('.person-feature');
+    if (profile && profile.hidden) {
+      filterPeople('all');
+      target.scrollIntoView();
+    }
+  }
+  if (peopleFilters) {
+    peopleFilters.hidden = false;
+    peopleFilters.querySelectorAll('[data-person-filter]').forEach(function (button) {
+      button.addEventListener('click', function () { filterPeople(button.dataset.personFilter); });
+    });
+    filterPeople('all');
+    window.addEventListener('hashchange', revealLinkedPerson);
+  }
+
+  var peopleToggle = document.querySelector('.people-expand-all');
+  var personStories = Array.from(document.querySelectorAll('.person-story'));
+  function visibleStories() {
+    return personStories.filter(function (story) { return !story.closest('.person-feature').hidden; });
+  }
+  function updatePeopleToggle() {
+    var allOpen = visibleStories().every(function (story) { return story.open; });
+    var scope = selectedPeopleRole === 'all' ? '全部心得' : '目前心得';
+    peopleToggle.textContent = (allOpen ? '收合' : '展開') + scope;
+    peopleToggle.setAttribute('aria-pressed', String(allOpen));
+  }
+  if (peopleToggle) {
     peopleToggle.hidden = false;
     peopleToggle.addEventListener('click', function () {
-      var open = !personStories.every(function (story) { return story.open; });
-      personStories.forEach(function (story) { story.open = open; });
+      var stories = visibleStories();
+      var open = !stories.every(function (story) { return story.open; });
+      stories.forEach(function (story) { story.open = open; });
       updatePeopleToggle();
     });
     personStories.forEach(function (story) { story.addEventListener('toggle', updatePeopleToggle); });
@@ -139,6 +187,7 @@
         item.appendChild(link); tocList.appendChild(item);
       });
       tocNav.appendChild(tocList); toc.append(summary, tocNav); readerTools.after(toc);
+      syncPeopleToc();
     }
     var progress = document.createElement('div');
     progress.className = 'reading-progress';
