@@ -467,7 +467,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
                 f'<span class="side-cover-label">{category}</span></div>'
                 f'<div class="side-head"><div><p class="eyebrow">{guide}帶你讀</p><h2>{label}</h2></div></div>'
                 f'<ul>{"".join(items)}</ul><a class="side-home" href="{root}index.html#chapter-results">'
-                f'<span aria-hidden="true">↖</span> 回到地瓜地方誌</a></aside>')
+                f'<span aria-hidden="true">↖︎</span> 回到地瓜地方誌</a></aside>')
         next_section = SECTIONS[(SECTIONS.index(section)+1) % len(SECTIONS)]
         next_slug, next_label, _, next_pages = next_section
         if page_idx < len(pages) - 1:
@@ -483,7 +483,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
             continue_note = f"這個單元讀完了，接著翻開「{next_label}」。"
             continue_url = f"{root}{next_slug}/{next_pages[0][1]}"
             continue_label = "探索下一章"
-            continue_arrow = "↗"
+            continue_arrow = "↗︎"
         chapter_continue = (f'<aside class="chapter-continue" data-next-chapter-url="{root}{next_slug}/{next_pages[0][1]}" data-next-chapter-title="{next_label}">'
                             f'<div><p class="eyebrow">{continue_eyebrow}</p><h2>{continue_title}</h2><p>{continue_note}</p></div>'
                             f'<a class="btn btn-primary" href="{continue_url}">{continue_label} <span aria-hidden="true">{continue_arrow}</span></a></aside>')
@@ -526,7 +526,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
       <p class="foot-brand">{LOGO_MARK}<span>來去金山，FUN 藷假</span></p>
       <p class="foot-remake"><span class="remake-badge">2026 REMAKE</span><span>重製版・依 2015 年原作重新編排與設計</span></p>
       <p class="foot-text">2015 台灣網界博覽會參賽作品，由新北市立金山高中「地瓜金正讚」小組製作，記錄金山地瓜的土地、人與故事。</p>
-      <p class="foot-text"><a class="foot-legacy" href="{root}{LEGACY_DIR}/index.htm">瀏覽 2015 年原版網站 <span aria-hidden="true">↗</span></a></p>
+      <p class="foot-text"><a class="foot-legacy" href="{root}{LEGACY_DIR}/index.htm">瀏覽 2015 年原版網站 <span aria-hidden="true">↗︎</span></a></p>
     </div>
     <div>
       <p class="foot-title">專題單元</p>
@@ -579,7 +579,7 @@ def build_index():
             f'<span class="card-content"><span class="card-guide" style="--guide-color:{skin}"><span aria-hidden="true"></span>{guide}</span><span class="card-title">{label}</span>'
             f'<span class="card-note">{note}</span><span class="card-sub">{sub}</span>'
             f'<span class="card-bottom"><span class="card-invitation">{invitation}</span>'
-            f'<span class="card-pages">{len(pages):02d} 篇</span><span class="card-go" aria-hidden="true">↗</span></span></span></a>')
+            f'<span class="card-pages">{len(pages):02d} 篇</span><span class="card-go" aria-hidden="true">↗︎</span></span></span></a>')
     body = (TOOL_DIR / "templates/home.html").read_text(encoding="utf-8")
     body = body.replace("{{ cards }}", "\n".join(cards))
     return page_shell("index.html", "金山地瓜地方誌｜把日子，過得藷甜。", body)
@@ -626,7 +626,7 @@ for section in SECTIONS:
                 f'<p class="eyebrow">CHAPTER {unit_number:02d} <span aria-hidden="true">・</span> {category}</p>'
                 f'<h1 class="page-title" id="reader-title">{h1}</h1><p class="article-deck">{note}</p>'
                 f'<div class="article-cover-meta"><span>{guide}陪你讀</span><span>{i+1:02d} / {len(pages):02d} 篇</span>'
-                f'<a class="legacy-link" href="{legacy_href}">看 2015 原版 <span aria-hidden="true">↗</span></a></div></div>'
+                f'<a class="legacy-link" href="{legacy_href}">看 2015 原版 <span aria-hidden="true">↗︎</span></a></div></div>'
                 f'<div class="article-portrait">{chapter_drawing(slug)}<span class="portrait-caption">{label}</span></div></header>\n'
                 f'<article class="prose">\n{inner}\n</article></section>')
         out = page_shell(new_rel, f"{h1}｜{label}｜{SITE}", body, slug, section, i)
@@ -686,14 +686,14 @@ a:hover {{ background: #ffd86b; color: #2f4a36; }}
 </head>
 <body>
 <span>這是 2015 年的原版網站（Namo WebEditor 頁框版，內容保留當年原樣）。</span>
-<a id="back" href="../index.html" target="_top">回到 2026 重製版 ↗</a>
+<a id="back" href="../index.html" target="_top">回到 2026 重製版 ↗︎</a>
 <script>
 (function () {{
   var m = /[?&]to=([a-z]+\\/[0-9]+\\.html)(?:&|$)/.exec(location.search);
   if (!m) return;
   var a = document.getElementById("back");
   a.href = "../" + m[1];
-  a.textContent = "回到 2026 重製版的這一頁 ↗";
+  a.textContent = "回到 2026 重製版的這一頁 ↗︎";
 }})();
 </script>
 </body>

@@ -627,7 +627,7 @@
     link.href = more ? pageURL(index + 1).href : new URL(continueCard.dataset.nextChapterUrl, initialURL).href;
     link.textContent = more ? '閱讀下一篇 ' : '探索下一章 ';
     var arrow = document.createElement('span');
-    arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = more ? '→' : '↗';
+    arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = more ? '→' : '↗︎';
     link.appendChild(arrow);
   }
   function setActive(index) {
