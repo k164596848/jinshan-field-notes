@@ -20,6 +20,12 @@ python3 src/verify_build.py                           # 確認「2026-remake/」
 
 確認無誤後，把暫存輸出整個取代 `2026-remake/` 即可。建置腳本會拒絕把輸出指到來源目錄。
 
+## GitHub Pages
+
+推上 `main` 後，`.github/workflows/pages.yml` 會先重建並驗證，再把 `2026-remake/`（含 `original/` 的 2015 原版）發布到 GitHub Pages，網址是 https://k164596848.github.io/jinshan-field-notes/ 。第一次要到 repo 的 Settings → Pages 把 Source 設成「GitHub Actions」。
+
+Pages 對每個網頁都送 `charset=utf-8`，所以建置時會把舊版的 Big5 單元頁框轉成 UTF-8（`2015-original/` 原稿不動）。根目錄的 `.nojekyll` 讓 Pages 不要用 Jekyll 處理這個 repo。
+
 ## 本機預覽
 
 ```sh

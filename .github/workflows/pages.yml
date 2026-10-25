@@ -1,0 +1,39 @@
+# Publishes 2026-remake/ (which also contains the 2015 site under original/) to GitHub Pages.
+# Before deploying it rebuilds the site from src/ and checks that the committed output matches.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the committed site matches a clean rebuild
+        run: |
+          pip install lxml
+          python3 src/verify_build.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: 2026-remake
+      - id: deployment
+        uses: actions/deploy-pages@v4

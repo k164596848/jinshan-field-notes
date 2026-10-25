@@ -613,6 +613,19 @@ with open(os.path.join(OUT, "index.htm"), "w", encoding="utf-8") as f:   # keeps
 LEGACY_OUT = Path(OUT) / LEGACY_DIR
 shutil.copytree(SRC, LEGACY_OUT, ignore=shutil.ignore_patterns(".*", "*.UAS", "*.uas"))
 
+# Static hosts such as GitHub Pages send "text/html; charset=utf-8" for every page, which overrides the
+# <meta charset=big5> inside the Big5-encoded unit framesets, so the copy is transcoded to UTF-8.
+BIG5_META = re.compile(rb"charset=big5", re.I)
+transcoded = 0
+for legacy_page in sorted(LEGACY_OUT.rglob("*.htm")):
+    data = legacy_page.read_bytes()
+    if not BIG5_META.search(data):
+        data.decode("utf-8")          # every non-Big5 page must already be valid UTF-8
+        continue
+    text = data.decode("cp950")       # strict: a bad byte should stop the build, not ship mojibake
+    legacy_page.write_bytes(BIG5_META.sub(b"charset=utf-8", text.encode("utf-8")))
+    transcoded += 1
+
 def legacy_patch(rel_path, replacements):
     """Byte-level ASCII substitutions so Big5 and UTF-8 pages are handled alike; each must match exactly once."""
     target = LEGACY_OUT / rel_path
@@ -718,7 +731,7 @@ used = {os.path.relpath(v, SRC) for v in copied.values()}
 unused = sorted(all_src - used)
 
 print(f"pages built: {len(report) + 1}   images copied: {len(copied)}   missing image refs: {len(missing_imgs)}")
-print(f"2015 site copied to {LEGACY_DIR}/ with a return bar and {legacy_entries} per-page entry framesets in {LEGACY_DIR}/go/")
+print(f"2015 site copied to {LEGACY_DIR}/ ({transcoded} Big5 pages transcoded to UTF-8) with a return bar and {legacy_entries} per-page entry framesets in {LEGACY_DIR}/go/")
 for old, new, st in report:
     print(f"  {old:46s} -> {new:14s} imgs={st['imgs']:3d} rows={st['rows']:3d} data-tables={st['data_tables']:2d} h2={st['h2']}")
 if missing_imgs:
