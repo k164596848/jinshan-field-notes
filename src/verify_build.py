@@ -3,11 +3,11 @@ from lxml import html
 from urllib.parse import urlsplit, unquote
 import re, subprocess, sys, tempfile
 base=Path(__file__).resolve().parents[1]
-site=base/'site'
+site=base/'2026-remake'
 tool=Path(__file__).resolve().parent
 temporary=tempfile.TemporaryDirectory(prefix='yam-verify-')
 built=Path(temporary.name)/'site'
-subprocess.run([sys.executable,str(tool/'build_yam.py'),str(base/'original'),str(built)],check=True,stdout=subprocess.DEVNULL)
+subprocess.run([sys.executable,str(tool/'build_yam.py'),str(base/'2015-original'),str(built)],check=True,stdout=subprocess.DEVNULL)
 
 for folder in (site,built):
  errors=[]
