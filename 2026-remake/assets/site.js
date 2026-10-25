@@ -59,6 +59,24 @@
     filterChapters();
   }
 
+  // 人物誌：保留原生展開閱讀，另提供一次展開所有心得。
+  var peopleToggle = document.querySelector('.people-expand-all');
+  if (peopleToggle) {
+    var personStories = Array.from(document.querySelectorAll('.person-story'));
+    function updatePeopleToggle() {
+      var allOpen = personStories.every(function (story) { return story.open; });
+      peopleToggle.textContent = allOpen ? '收合全部心得' : '展開全部心得';
+      peopleToggle.setAttribute('aria-pressed', String(allOpen));
+    }
+    peopleToggle.hidden = false;
+    peopleToggle.addEventListener('click', function () {
+      var open = !personStories.every(function (story) { return story.open; });
+      personStories.forEach(function (story) { story.open = open; });
+      updatePeopleToggle();
+    });
+    personStories.forEach(function (story) { story.addEventListener('toggle', updatePeopleToggle); });
+  }
+
   // Article controls and a heading index follow each page's actual content.
   var article = document.querySelector('article.prose');
   if (article) {
@@ -98,7 +116,7 @@
     larger.addEventListener('click', function () { setFont(fontSize + .125); });
     resetFont.addEventListener('click', function () { setFont(1.04); });
 
-    var headings = Array.from(article.querySelectorAll('h2, h3'));
+    var headings = Array.from(article.querySelectorAll('h2, h3')).filter(function (heading) { return !heading.closest('.person-story'); });
     if (headings.length) {
       var toc = document.createElement('details');
       toc.className = 'article-toc';
