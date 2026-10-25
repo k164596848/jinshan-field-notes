@@ -23,10 +23,14 @@ for protected in (Path(SRC), Path(ASSETS), TOOL_DIR, Path.cwd()):
     if Path(OUT) == protected or Path(OUT) in protected.parents:
         parser.error(f"Output must not contain source files or the working directory: {OUT}")
 SITE = "來去金山，FUN藷假"
+LEGACY_DIR = "original"          # the 2015 site, copied verbatim into the output so both versions share one host
+LEGACY_BAR = "remake-bar.htm"    # thin top frame with the "back to the 2026 remake" button
+LEGACY_BAR_ROWS = "40"
 
 # line icons (24x24, stroke = currentColor) for the eight units + home
 ICONS = {
     "home":    '<path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10.5V19h11v-8.5"/><path d="M10 19v-5h4v5"/>',
+    "legacy":  '<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l2.8 1.7"/>',
     "how":     '<circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/><path d="M11 8c-2 .3-3 1.4-3.2 3.2"/>',
     "jinshan": '<path d="M3 19 9 9l3.5 5.5L15 11l6 8H3Z"/><circle cx="17.5" cy="6" r="2"/>',
     "yam":     '<path d="M4.5 14.5c0-4 4-8.5 9.5-8.5 4 0 6 2.5 6 5.5 0 4-4 8-9.5 8-4 0-6-2-6-5Z"/><path d="M13 6c.5-2 2-3 3.5-3.5"/><path d="M9 13c1.5-.5 3-.5 4.5 0"/>',
@@ -431,6 +435,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
     for slug, label, badge, pages in SECTIONS:
         cur = ' class="current"' if slug == current_slug else ""
         nav.append(f'<li{cur}><a href="{root}{slug}/{pages[0][1]}">{icon(slug)}<span>{label}</span></a></li>')
+    nav.append(f'<li class="legacy"><a href="{root}{LEGACY_DIR}/index.htm" title="瀏覽 2015 年的原版網站">{icon("legacy")}<span>2015 原版</span></a></li>')
     side = ""
     pager = ""
     if section:
@@ -490,6 +495,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
     <div>
       <p class="foot-brand">{LOGO_MARK}<span>來去金山，FUN 藷假</span></p>
       <p class="foot-text">2015 台灣網界博覽會參賽作品，由新北市立金山高中「地瓜金正讚」小組製作，記錄金山地瓜的土地、人與故事。</p>
+      <p class="foot-text"><a class="foot-legacy" href="{root}{LEGACY_DIR}/index.htm">瀏覽 2015 年原版網站 <span aria-hidden="true">↗</span></a></p>
     </div>
     <div>
       <p class="foot-title">專題單元</p>
@@ -568,6 +574,7 @@ for section in SECTIONS:
     copy_asset(badge)
     for i, (old, new, nlabel, h1, pbadge) in enumerate(pages):
         new_rel = f"{slug}/{new}"
+        legacy_href = rel(new_rel, f"{LEGACY_DIR}/go/{slug}-{i+1}.htm")
         inner, st = convert_page(old, new_rel, h1)
         # Canonical polished articles are independent of the legacy Namo conversion.
         content_file = TOOL_DIR / "content" / new_rel
@@ -586,7 +593,8 @@ for section in SECTIONS:
                 f'<header class="page-head article-cover"><div class="article-cover-text">'
                 f'<p class="eyebrow">CHAPTER {unit_number:02d} <span aria-hidden="true">・</span> {category}</p>'
                 f'<h1 class="page-title">{h1}</h1><p class="article-deck">{note}</p>'
-                f'<div class="article-cover-meta"><span>{guide}陪你讀</span><span>{i+1:02d} / {len(pages):02d} 篇</span></div></div>'
+                f'<div class="article-cover-meta"><span>{guide}陪你讀</span><span>{i+1:02d} / {len(pages):02d} 篇</span>'
+                f'<a class="legacy-link" href="{legacy_href}">看 2015 原版 <span aria-hidden="true">↗</span></a></div></div>'
                 f'<div class="article-portrait">{chapter_drawing(slug)}<span class="portrait-caption">{label}</span></div></header>\n'
                 f'<article class="prose">\n{inner}\n</article>')
         out = page_shell(new_rel, f"{h1}｜{label}｜{SITE}", body, slug, section, i)
@@ -600,6 +608,109 @@ with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as f:
 with open(os.path.join(OUT, "index.htm"), "w", encoding="utf-8") as f:   # keeps old deep links alive
     f.write('<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=index.html"><title>來去金山，FUN藷假</title></head><body><a href="index.html">前往新版首頁</a></body></html>\n')
 
+# ---------------------------------------------------------------- the 2015 site, served next to the remake
+# 2015-original stays untouched; this copy is build output and gets a return bar plus per-page entry framesets.
+LEGACY_OUT = Path(OUT) / LEGACY_DIR
+shutil.copytree(SRC, LEGACY_OUT, ignore=shutil.ignore_patterns(".*", "*.UAS", "*.uas"))
+
+def legacy_patch(rel_path, replacements):
+    """Byte-level ASCII substitutions so Big5 and UTF-8 pages are handled alike; each must match exactly once."""
+    target = LEGACY_OUT / rel_path
+    data = target.read_bytes()
+    for old, new in replacements:
+        old_b, new_b = old.encode("utf-8"), new.encode("utf-8")
+        assert data.count(old_b) == 1, f"{rel_path}: expected exactly one occurrence of {old!r}"
+        data = data.replace(old_b, new_b)
+    target.write_bytes(data)
+
+def bar_frame(src):
+    return f'<frame name="remake" scrolling="no" noresize marginwidth="0" marginheight="0" frameborder="0" src="{src}">'
+
+(LEGACY_OUT / LEGACY_BAR).write_text(f"""<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>2015 原版網站</title>
+<style>
+html, body {{ margin: 0; height: 100%; overflow: hidden; }}
+body {{ font: 14px/1 "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; background: #2f4a36; color: #f6f1e5; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; white-space: nowrap; box-sizing: border-box; }}
+a {{ color: #ffd86b; font-weight: 700; text-decoration: none; border: 1px solid #ffd86b; border-radius: 3px; padding: 6px 12px; flex: none; }}
+a:hover {{ background: #ffd86b; color: #2f4a36; }}
+@media (max-width: 640px) {{ span {{ display: none; }} }}
+</style>
+</head>
+<body>
+<span>這是 2015 年的原版網站（Namo WebEditor 頁框版，內容保留當年原樣）。</span>
+<a id="back" href="../index.html" target="_top">回到 2026 重製版 ↗</a>
+<script>
+(function () {{
+  var m = /[?&]to=([a-z]+\\/[0-9]+\\.html)(?:&|$)/.exec(location.search);
+  if (!m) return;
+  var a = document.getElementById("back");
+  a.href = "../" + m[1];
+  a.textContent = "回到 2026 重製版的這一頁 ↗";
+}})();
+</script>
+</body>
+</html>
+""", encoding="utf-8")
+
+legacy_patch("index.htm", [(
+    '<p align="center"><b><span style="font-size:12pt;">建議最佳瀏覽解析度',
+    '<p align="center"><a href="../index.html" style="font-size:14pt;">◎ 這是 2015 年的原版網站，點此前往 2026 年重製版</a></p>\n'
+    '<p align="center"><b><span style="font-size:12pt;">建議最佳瀏覽解析度')])
+legacy_patch("all-2.htm", [(
+    '<frameset rows="32%, 68%" cols="1*" border="0">',
+    f'<frameset rows="{LEGACY_BAR_ROWS}, 32%, 68%" cols="1*" border="0">{bar_frame(LEGACY_BAR)}')])
+legacy_patch("narrative.htm", [(
+    '<frameset rows="46%, 54%" cols="1*" border="0">',
+    f'<frameset rows="{LEGACY_BAR_ROWS}, 46%, 54%" cols="1*" border="0">{bar_frame(LEGACY_BAR)}')])
+
+def legacy_entry(title, rows, header_src, main_src, new_rel, main_attrs='scrolling="auto"'):
+    return f"""<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>{title}｜{SITE}（2015 原版）</title>
+</head>
+<frameset rows="{LEGACY_BAR_ROWS}, {rows}" cols="1*" border="0">
+{bar_frame(f"../{LEGACY_BAR}?to={new_rel}")}
+<frame name="header" scrolling="no" marginwidth="10" marginheight="14" src="{header_src}" noresize>
+<frame name="main" {main_attrs} marginwidth="10" marginheight="14" src="{main_src}">
+<noframes>
+<body>
+<p><a href="{main_src}">{title}</a>（2015 原版）／<a href="../../{new_rel}">2026 重製版</a></p>
+</body>
+</noframes>
+</frameset>
+</html>
+"""
+
+(LEGACY_OUT / "go").mkdir()
+legacy_entries = 0
+for slug, label, badge, pages in SECTIONS:
+    for i, (old, new, nlabel, h1, pbadge) in enumerate(pages):
+        new_rel = f"{slug}/{new}"
+        old_dir, old_name = os.path.split(old)
+        if slug == "about":
+            # narrative.htm: the "up.htm" header frame plus one of A–D.htm
+            html_out = legacy_entry(h1, "46%, 54%", "../narrative-data/narrative-html/up.htm", f"../{old}", new_rel, 'scrolling="yes"')
+        else:
+            # all-2.htm: the switch.htm button bar plus the unit's own contents/detail frameset,
+            # cloned so the detail frame opens on this page instead of the unit's first page.
+            prefix = os.path.basename(old_dir).replace("-html", "")
+            entry = f"{old_dir}/{prefix}-all-1.htm"
+            assert (LEGACY_OUT / entry).is_file(), f"missing unit frameset {entry}"
+            if i == 0:
+                unit_src = entry
+            else:
+                unit_src = f"{old_dir}/go-{i+1}.htm"
+                shutil.copy2(LEGACY_OUT / entry, LEGACY_OUT / unit_src)
+                legacy_patch(unit_src, [(f'src="{os.path.basename(pages[0][0])}"', f'src="{old_name}"')])
+            html_out = legacy_entry(h1, "32%, 68%", "../switch.htm", f"../{unit_src}", new_rel)
+        (LEGACY_OUT / "go" / f"{slug}-{i+1}.htm").write_text(html_out, encoding="utf-8")
+        legacy_entries += 1
+
 # unreferenced originals (for the report only; the full original tree is backed up elsewhere)
 all_src = {os.path.relpath(os.path.join(dp, f), SRC) for dp, _, fs in os.walk(SRC) for f in fs
            if not f.startswith(".") and not f.lower().endswith((".htm", ".uas"))}
@@ -607,6 +718,7 @@ used = {os.path.relpath(v, SRC) for v in copied.values()}
 unused = sorted(all_src - used)
 
 print(f"pages built: {len(report) + 1}   images copied: {len(copied)}   missing image refs: {len(missing_imgs)}")
+print(f"2015 site copied to {LEGACY_DIR}/ with a return bar and {legacy_entries} per-page entry framesets in {LEGACY_DIR}/go/")
 for old, new, st in report:
     print(f"  {old:46s} -> {new:14s} imgs={st['imgs']:3d} rows={st['rows']:3d} data-tables={st['data_tables']:2d} h2={st['h2']}")
 if missing_imgs:

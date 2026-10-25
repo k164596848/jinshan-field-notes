@@ -686,3 +686,11 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--sun); outline-o
   .mascot-section { background: #fff; }
   .mascot-section img { mix-blend-mode: normal; }
 }
+
+/* ---- links between the 2026 remake and the 2015 original (served together under original/) ---- */
+.top-nav .legacy a { color: var(--yam); border: 1px solid var(--line); }
+.top-nav .legacy a:hover { color: var(--forest); border-color: var(--forest); background: #e8e6d8; }
+.article-cover-meta .legacy-link { color: inherit; text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+.article-cover-meta .legacy-link:hover { color: var(--forest); }
+.foot-legacy { color: var(--sun); text-decoration: none; border-bottom: 1px solid currentColor; }
+.foot-legacy:hover { color: #fff; }

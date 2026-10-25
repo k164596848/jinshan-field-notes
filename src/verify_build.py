@@ -1,7 +1,7 @@
 from pathlib import Path
 from lxml import html
 from urllib.parse import urlsplit, unquote
-import re, subprocess, sys, tempfile
+import re, subprocess, sys, tempfile, filecmp
 base=Path(__file__).resolve().parents[1]
 site=base/'2026-remake'
 tool=Path(__file__).resolve().parent
@@ -39,4 +39,12 @@ print('Home, all 31 article bodies, CSS and JS match a clean rebuild')
 for page in built.rglob('*.html'):
  assert page.read_bytes()==(site/page.relative_to(built)).read_bytes(),f"Output differs: {page.relative_to(built)}"
 print('All 32 published HTML pages exactly match the clean build')
+
+def same_tree(a,b):
+ c=filecmp.dircmp(a,b)
+ _,mismatch,errors=filecmp.cmpfiles(a,b,c.common_files,shallow=False)
+ assert not (c.left_only or c.right_only or mismatch or errors),(str(a),c.left_only,c.right_only,mismatch,errors)
+ for d in c.common_dirs:same_tree(a/d,b/d)
+same_tree(site/'original',built/'original')
+print('original/ (2015 site copy, return bar and go/ entry pages) matches the clean build')
 temporary.cleanup()
