@@ -476,7 +476,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
 <body id="top"{theme_attrs}>
 <a class="skip" href="#main">跳到主要內容</a>
 <header class="site-header">
-  <div class="edition-bar"><span>金山地瓜地方誌</span><span>一片土地・一群人・一顆地瓜</span><span>JINSHAN FIELD NOTES — 2015</span></div>
+  <div class="edition-bar"><span>金山地瓜地方誌</span><span>一片土地・一群人・一顆地瓜</span><span>JINSHAN FIELD NOTES — 2015 <b class="remake-tag">2026 REMAKE</b></span></div>
   <div class="bar">
     <a class="brand" href="{root}index.html" aria-label="{SITE} 首頁">{LOGO_MARK}<span class="wordmark"><span class="w1">來去金山</span><span class="w2">FUN 藷假</span></span></a>
     <nav class="top-nav" aria-label="主選單"><ul>{"".join(nav)}</ul></nav>
@@ -494,6 +494,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
   <div class="foot-grid">
     <div>
       <p class="foot-brand">{LOGO_MARK}<span>來去金山，FUN 藷假</span></p>
+      <p class="foot-remake"><span class="remake-badge">2026 REMAKE</span><span>重製版・依 2015 年原作重新編排與設計</span></p>
       <p class="foot-text">2015 台灣網界博覽會參賽作品，由新北市立金山高中「地瓜金正讚」小組製作，記錄金山地瓜的土地、人與故事。</p>
       <p class="foot-text"><a class="foot-legacy" href="{root}{LEGACY_DIR}/index.htm">瀏覽 2015 年原版網站 <span aria-hidden="true">↗</span></a></p>
     </div>

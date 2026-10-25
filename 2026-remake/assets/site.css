@@ -694,3 +694,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--sun); outline-o
 .article-cover-meta .legacy-link:hover { color: var(--forest); }
 .foot-legacy { color: var(--sun); text-decoration: none; border-bottom: 1px solid currentColor; }
 .foot-legacy:hover { color: #fff; }
+
+/* ---- "2026 REMAKE" marks: edition bar tag and footer badge ---- */
+.remake-tag { font-weight: 700; color: var(--yam); margin-left: 8px; }
+.foot-remake { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 .9rem; font-size: .8rem; color: #d0d6c4; letter-spacing: .04em; }
+.remake-badge { display: inline-block; padding: 5px 10px; border: 1px solid var(--sun); color: var(--sun); border-radius: 3px; font-weight: 700; letter-spacing: .18em; font-size: .72rem; line-height: 1; }
