@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rebuild the 2015 CyberFair site yam51103 (Namo WebEditor framesets + layout tables)
 as a clean, responsive static site.  Usage: build_yam.py SRC_DIR OUT_DIR ASSET_DIR"""
-import os, re, sys, shutil, struct, argparse, html as htmlmod
+import os, re, sys, shutil, struct, argparse, json, html as htmlmod
 from pathlib import Path
 from lxml import html, etree
 
@@ -97,6 +97,15 @@ SECTIONS = [
         ("narrative-data/narrative-html/D.htm", "4.html", "貢獻列表", "貢獻列表", None),
     ]),
 ]
+# Short reads are measured from canonical content, including the photo workload.
+def reading_info(slug, filename):
+    content = TOOL_DIR / "content" / slug / filename
+    if not content.is_file():
+        return {"short": False}
+    doc = html.fromstring(content.read_text(encoding="utf-8"))
+    length = len(re.sub(r"\s", "", doc.text_content()))
+    return {"short": length <= 1000 and len(doc.xpath(".//img")) <= 6}
+
 EXTRA_ASSETS = ["photo/39.png", "photo/zz.gif", "photo/6.png", "photo/cc-by-nc-sa-88x31.png"]
 
 # old page path -> new page path (site-relative)
@@ -427,6 +436,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
     is_home = new_rel == "index.html"
     theme_attrs = ' class="home"' if is_home else ''
     chapter_continue = ""
+    reader_manifest = ""
     if current_slug:
         category, note, invitation, background, accent = CHAPTER_COVERS[current_slug]
         theme_attrs = (f' class="article-page article-{current_slug}" '
@@ -440,6 +450,12 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
     pager = ""
     if section:
         slug, label, badge, pages = section
+        manifest = {"chapter": label, "index": page_idx, "pages": [
+            {"url": new, "title": nlabel, **reading_info(slug, new)}
+            for _, new, nlabel, *_ in pages
+        ]}
+        # Escape less-than signs so editorial titles cannot terminate the JSON script.
+        reader_manifest = '<script type="application/json" id="reader-manifest">' + json.dumps(manifest, ensure_ascii=False).replace('<', '\\u003c') + '</script>'
         items = []
         for i, (_, new, nlabel, *_rest) in enumerate(pages):
             cur = ' aria-current="page"' if i == page_idx else ""
@@ -454,9 +470,23 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
                 f'<span aria-hidden="true">↖</span> 回到地瓜地方誌</a></aside>')
         next_section = SECTIONS[(SECTIONS.index(section)+1) % len(SECTIONS)]
         next_slug, next_label, _, next_pages = next_section
-        chapter_continue = (f'<aside class="chapter-continue"><div><p class="eyebrow">ANOTHER LITTLE STORY</p>'
-                            f'<h2>下一段故事，也有藷甜。</h2><p>讓好奇心繼續，翻開「{next_label}」。</p></div>'
-                            f'<a class="btn btn-primary" href="{root}{next_slug}/{next_pages[0][1]}">探索下一章 <span aria-hidden="true">↗</span></a></aside>')
+        if page_idx < len(pages) - 1:
+            continue_eyebrow = "CONTINUE READING"
+            continue_title = f"下一篇：{pages[page_idx+1][2]}"
+            continue_note = f"繼續閱讀「{label}」的下一段故事。"
+            continue_url = f"{root}{slug}/{pages[page_idx+1][1]}"
+            continue_label = "閱讀下一篇"
+            continue_arrow = "→"
+        else:
+            continue_eyebrow = "NEXT CHAPTER"
+            continue_title = f"下一章：{next_label}"
+            continue_note = f"這個單元讀完了，接著翻開「{next_label}」。"
+            continue_url = f"{root}{next_slug}/{next_pages[0][1]}"
+            continue_label = "探索下一章"
+            continue_arrow = "↗"
+        chapter_continue = (f'<aside class="chapter-continue" data-next-chapter-url="{root}{next_slug}/{next_pages[0][1]}" data-next-chapter-title="{next_label}">'
+                            f'<div><p class="eyebrow">{continue_eyebrow}</p><h2>{continue_title}</h2><p>{continue_note}</p></div>'
+                            f'<a class="btn btn-primary" href="{continue_url}">{continue_label} <span aria-hidden="true">{continue_arrow}</span></a></aside>')
         prev_ = f'<a class="prev" href="{root}{slug}/{pages[page_idx-1][1]}"><span class="k">上一頁</span>{pages[page_idx-1][2]}</a>' if page_idx > 0 else "<span></span>"
         next_ = f'<a class="next" href="{root}{slug}/{pages[page_idx+1][1]}"><span class="k">下一頁</span>{pages[page_idx+1][2]}</a>' if page_idx < len(pages) - 1 else "<span></span>"
         pager = f'<nav class="pager" aria-label="上一頁／下一頁">{prev_}{next_}</nav>'
@@ -510,6 +540,7 @@ def page_shell(new_rel, title, body_html, current_slug=None, section=None, page_
   </div>
 </footer>
 <a class="to-top" href="#top" aria-label="回到頁首">▲</a>
+{reader_manifest}
 <script src="{root}assets/site.js"></script>
 </body>
 </html>
@@ -591,13 +622,13 @@ for section in SECTIONS:
         unit_number = SECTIONS.index(section) + 1
         body = (f'<nav class="article-breadcrumb" aria-label="麵包屑"><a href="../index.html">地方誌首頁</a>'
                 f'<span aria-hidden="true">/</span><a href="1.html">{label}</a><span aria-hidden="true">/</span><span aria-current="page">{h1}</span></nav>'
-                f'<header class="page-head article-cover"><div class="article-cover-text">'
+                f'<section class="reader-entry" data-reader-index="{i}"><header class="page-head article-cover"><div class="article-cover-text">'
                 f'<p class="eyebrow">CHAPTER {unit_number:02d} <span aria-hidden="true">・</span> {category}</p>'
-                f'<h1 class="page-title">{h1}</h1><p class="article-deck">{note}</p>'
+                f'<h1 class="page-title" id="reader-title">{h1}</h1><p class="article-deck">{note}</p>'
                 f'<div class="article-cover-meta"><span>{guide}陪你讀</span><span>{i+1:02d} / {len(pages):02d} 篇</span>'
                 f'<a class="legacy-link" href="{legacy_href}">看 2015 原版 <span aria-hidden="true">↗</span></a></div></div>'
                 f'<div class="article-portrait">{chapter_drawing(slug)}<span class="portrait-caption">{label}</span></div></header>\n'
-                f'<article class="prose">\n{inner}\n</article>')
+                f'<article class="prose">\n{inner}\n</article></section>')
         out = page_shell(new_rel, f"{h1}｜{label}｜{SITE}", body, slug, section, i)
         os.makedirs(os.path.dirname(os.path.join(OUT, new_rel)), exist_ok=True)
         with open(os.path.join(OUT, new_rel), "w", encoding="utf-8") as f:
